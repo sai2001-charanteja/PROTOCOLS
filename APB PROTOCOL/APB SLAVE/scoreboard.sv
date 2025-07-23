@@ -6,6 +6,9 @@ class scoreboard;
 	packet drvr_pkt;
 	int tx_id;
 	int matched, missMatched;
+	int ttl_read_op;
+	int ttl_write_op;
+	
 	bit [31:0][31:0] shadow_memory;
 	function new(mailbox#(packet) imbx, mailbox#(packet) ombx);
 		this.imbx = imbx;
@@ -16,11 +19,14 @@ class scoreboard;
 		if(!drvr_pkt.PSLVERR) begin
 			if(gen_pkt.PWRITE) begin
 				shadow_memory[gen_pkt.PADDR] = gen_pkt.PWDATA;
+				ttl_write_op++;
 			end else begin
 				if(shadow_memory[gen_pkt.PADDR] == drvr_pkt.PRDATA) matched++;
 				else missMatched++;
 				
 				if(shadow_memory[gen_pkt.PADDR] != drvr_pkt.PRDATA) $display("MissMatched");
+				
+				ttl_read_op++;
 			end
 		end
 	endfunction
@@ -29,6 +35,8 @@ class scoreboard;
 		tx_id = 0;
 		matched = 0;
 		missMatched = 0;
+		ttl_read_op =0;
+		ttl_write_op =0;
 		$display("[Scoreboard] run strated at time : %0t",$time);
 		
 		forever begin
@@ -47,8 +55,12 @@ class scoreboard;
 
 
 	function void Report();
-		$display("\n*********[ScoreBoard] Results at %0t**********",$time);
-		$display("*********Matched : %0d, MissMatched : %0d*********",matched,missMatched);
+		
+		$display("\n*************[ScoreBoard] Results at %0t****************",$time);
+		$display("****** (Read Operations) Matched : %0d, MissMatched : %0d*****",matched,missMatched);
+		$display("**Read Operations count : %0d , Write Operation count : %0d**",ttl_read_op,ttl_write_op);
 		$display("Shadow Memory : %0p",shadow_memory);
+		
+		
 	endfunction
 endclass

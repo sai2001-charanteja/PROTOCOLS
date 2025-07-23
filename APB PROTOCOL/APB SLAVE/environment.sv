@@ -23,7 +23,8 @@ class environment;
 	
 	int ttl_no_tnxs;
 	
-	function new(virtual apb_if.modport_tb vif,	virtual apb_if.modport_mon ivif,virtual apb_if.modport_mon ovif);
+	function new(virtual apb_if.modport_tb vif,	virtual apb_if.modport_mon ivif,virtual apb_if.modport_mon ovif,int ttl_no_tnxs);
+		this.ttl_no_tnxs = ttl_no_tnxs;
 		this.vif = vif;
 		this.ivif = ivif;
 		this.ovif = ovif;
@@ -35,7 +36,6 @@ class environment;
 		mbx = new(1);
 		imbx = new(1);
 		ombx = new(1);
-		ttl_no_tnxs = 1000;
 		gen = new(mbx,ttl_no_tnxs);
 		drvr = new(mbx,vif);
 		imon = new(imbx,ivif);
@@ -46,9 +46,8 @@ class environment;
 		
 	endfunction
 	
-	task run();
+	task automatic run();
 		$display("[Environment] Run started at time : %0t",$time);
-		build();
 		
 		fork 
 			gen.run();
@@ -59,9 +58,9 @@ class environment;
 			cov.run();
 		join_any
 		
-		wait(scb.tx_id == ttl_no_tnxs);
+		wait(drvr.tx_id == ttl_no_tnxs);
 		
-		repeat(10) @(vif.cb);
+		repeat(50) @(vif.cb);
 		scb.Report();
 		cov.Report();
 		$display("[Environment] Run completed at time : %0t",$time);

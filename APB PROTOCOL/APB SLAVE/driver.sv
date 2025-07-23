@@ -11,14 +11,19 @@ class driver;
 		this.vif = vif;
 	endfunction
 	
-	task automatic apply_reset();
-		$display("[Driver] Reset Applied at time :%0t",$time);
-		vif.cb.PRESET 	<= 1'b1;
+	task automatic reset();
 		vif.cb.PSEL 	<= 1'b0;
 		vif.cb.PADDR	<= 'b0;
 		vif.cb.PWRITE 	<= 'b0;
 		vif.cb.PWDATA 	<= 'b0;
 		vif.cb.PENABLE 	<= 1'b0;
+	
+	endtask
+	
+	task automatic apply_reset();
+		$display("[Driver] Reset Applied at time :%0t",$time);
+		vif.cb.PRESET 	<= 1'b1;
+		reset();
 		repeat(2) @(vif.cb);
 		
 		$display("[Driver] Reset completed at time :%0t",$time);
@@ -42,7 +47,7 @@ class driver;
 	
 	task waitforReady();
 		@(vif.cb);
-		while(!vif.cb.PREADY) @(vif.cb);
+		while(!(vif.cb.PREADY ^ vif.cb.PSLVERR)) @(vif.cb);
 		vif.cb.PSEL 	<= 1'b0;
 		vif.cb.PENABLE	<= 1'b0;
 	endtask
@@ -55,6 +60,19 @@ class driver;
 		$display("[Driver] Transaction - %0d completed at time : %0t",tx_id,$time);
 	endtask
 	
+	task driveIdle();
+		reset();
+		@(vif.cb);
+	endtask
+	
+	task driveByPktType();
+		case(drvr_pkt.kind)
+			IDLE: driveIdle();
+			BURST,INVALID: drive();
+		endcase
+	endtask
+	
+	
 	task run();
 		$display("[Driver] Run started at time : %0t",$time);
 		tx_id =0;
@@ -63,7 +81,7 @@ class driver;
 		forever begin
 			mbx.get(drvr_pkt);
 			tx_id++;
-			drive();
+			driveByPktType();
 		end
 	
 		$display("[Driver] Run completed at time : %0t",$time);

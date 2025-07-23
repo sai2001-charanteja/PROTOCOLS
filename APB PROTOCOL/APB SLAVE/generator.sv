@@ -10,12 +10,13 @@ class generator;
 	function new(mailbox#(packet) mbx,int ttl_no_pkts);
 		this.ttl_no_pkts = ttl_no_pkts;
 		this.mbx = mbx;
+		ref_pkt = new();
 	endfunction
 	
 	
 	task run();		
 		tx_id = 0;
-		ref_pkt = new();
+		
 		
 		repeat(ttl_no_pkts) begin
 			tx_id++;

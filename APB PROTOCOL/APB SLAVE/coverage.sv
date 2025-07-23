@@ -17,6 +17,8 @@ class coverage;
 			bins wdatamedium = {[100:200]};
 		}
 		
+		cross pkt.PWRITE,pkt.PADDR;
+		cross pkt.PWRITE,pkt.PWDATA;
 	endgroup
 	
 	function new(mailbox#(packet) mbx);
