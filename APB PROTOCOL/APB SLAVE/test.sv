@@ -44,13 +44,13 @@ class newtest extends basetest;
 	
 	task automatic changePktkind();
 		
-		wait(env.gen.tx_id == 0.3*ttl_no_tnxs);
+		wait(env.gen.tx_id == 0.3*ttl_no_tnxs); // 30% Burst Transaction
 		env.gen.ref_pkt.kind = IDLE;
-		wait(env.gen.tx_id == 0.7*ttl_no_tnxs);
+		wait(env.gen.tx_id == 0.7*ttl_no_tnxs); // 40% Idle Transaction
 		npkt = new();
 		env.gen.ref_pkt = npkt;
 		env.gen.ref_pkt.kind = INVALID;
-		wait(env.drvr.tx_id == ttl_no_tnxs);
+		wait(env.drvr.tx_id == ttl_no_tnxs); // 30% Invalid Transactions
 		
 	endtask
 	
